@@ -185,8 +185,10 @@ class RecordingService : Service() {
         val threshold = AudioAnalyzer.computeMadThreshold(energies, 3.0)
         val loudSegments = segments.filter { it.rmsEnergy >= threshold }
 
-        // Delete non-loud chunk files to save storage
+        // Save metadata and delete non-loud chunk files
+        val sessionCopy = sessionName
         Thread({
+            SessionManager.saveSessionMetadata(this, sessionCopy, loudSegments, segments.size)
             SessionManager.deleteNonLoudChunks(segments, threshold)
         }, "CleanupThread").start()
 

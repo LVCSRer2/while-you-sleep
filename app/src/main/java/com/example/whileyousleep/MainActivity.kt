@@ -75,6 +75,10 @@ class MainActivity : AppCompatActivity(), RecordingService.RecordingListener {
             }
         }
 
+        binding.btnHistory.setOnClickListener {
+            startActivity(Intent(this, HistoryActivity::class.java))
+        }
+
         val intent = Intent(this, RecordingService::class.java)
         startService(intent)
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
