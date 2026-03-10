@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
-import android.widget.CalendarView
+import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.whileyousleep.databinding.ActivityHistoryBinding
@@ -20,6 +20,9 @@ class HistoryActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var currentPlayingSegment: AudioSegment? = null
     private var recordingDates = setOf<String>()
+
+    private var allSegmentsForDate = listOf<AudioSegment>()
+    private var maxEnergy = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +40,14 @@ class HistoryActivity : AppCompatActivity() {
             loadDate(dateStr)
         }
 
-        // Load today's date
+        binding.seekBarEnergy.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                applyFilter(progress)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
         val today = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(
             Calendar.getInstance().time
         )
@@ -53,20 +63,34 @@ class HistoryActivity : AppCompatActivity() {
         val sessions = SessionManager.getSessionsForDate(this, dateStr)
         if (sessions.isEmpty()) {
             binding.tvDateInfo.text = formatDateDisplay(dateStr) + " - 기록 없음"
+            allSegmentsForDate = emptyList()
             segmentAdapter.submitList(emptyList())
             binding.recyclerSegments.visibility = View.GONE
+            binding.layoutFilter.visibility = View.GONE
             return
         }
 
-        val allSegments = mutableListOf<AudioSegment>()
+        val segments = mutableListOf<AudioSegment>()
         for (session in sessions) {
-            allSegments.addAll(SessionManager.loadSessionMetadata(this, session))
+            segments.addAll(SessionManager.loadSessionMetadata(this, session))
         }
-        allSegments.sortBy { it.timestampMs }
+        segments.sortBy { it.timestampMs }
+        allSegmentsForDate = segments
+        maxEnergy = segments.maxOfOrNull { it.rmsEnergy } ?: 0.0
 
-        binding.tvDateInfo.text = formatDateDisplay(dateStr) + " - ${allSegments.size}개 소리 감지"
-        segmentAdapter.submitList(allSegments)
-        binding.recyclerSegments.visibility = View.VISIBLE
+        binding.seekBarEnergy.progress = 0
+        binding.layoutFilter.visibility = View.VISIBLE
+        applyFilter(0)
+    }
+
+    private fun applyFilter(progress: Int) {
+        val threshold = (progress / 1000.0) * maxEnergy
+        val filtered = allSegmentsForDate.filter { it.rmsEnergy >= threshold }
+
+        binding.tvFilterValue.text = "%.4f (%d)".format(threshold, filtered.size)
+        binding.tvDateInfo.text = "${filtered.size} / ${allSegmentsForDate.size}개 표시"
+        segmentAdapter.submitList(filtered)
+        binding.recyclerSegments.visibility = if (filtered.isEmpty()) View.GONE else View.VISIBLE
     }
 
     private fun formatDateDisplay(dateStr: String): String {

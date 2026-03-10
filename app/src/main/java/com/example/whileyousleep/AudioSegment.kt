@@ -5,5 +5,5 @@ data class AudioSegment(
     val timestampMs: Long,
     val rmsEnergy: Double,
     val filePath: String,
-    val durationMs: Int = 2000
+    val durationMs: Int = 5000
 )

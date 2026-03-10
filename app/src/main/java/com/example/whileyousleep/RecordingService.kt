@@ -22,7 +22,7 @@ class RecordingService : Service() {
         private const val NOTIFICATION_ID = 1
         private const val TAG = "RecordingService"
         private const val SAMPLE_RATE = 16000
-        private const val CHUNK_DURATION_SEC = 2
+        private const val CHUNK_DURATION_SEC = 5
         private const val CHUNK_SAMPLES = SAMPLE_RATE * CHUNK_DURATION_SEC
     }
 

@@ -31,23 +31,72 @@
             android:layout_marginStart="8dp" />
     </LinearLayout>
 
-    <CalendarView
-        android:id="@+id/calendarView"
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/Theme.WhileYouSleep"
-        android:dateTextAppearance="@android:style/TextAppearance.Small"
-        android:weekDayTextAppearance="@android:style/TextAppearance.Small" />
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginVertical="4dp"
+        app:cardBackgroundColor="#FFFFFFFF"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+
+        <CalendarView
+            android:id="@+id/calendarView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="4dp" />
+
+    </androidx.cardview.widget.CardView>
 
     <TextView
         android:id="@+id/tvDateInfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="16dp"
-        android:paddingVertical="12dp"
+        android:paddingTop="12dp"
         android:textColor="#CCFFFFFF"
         android:textSize="15sp"
         android:textStyle="bold" />
+
+    <LinearLayout
+        android:id="@+id/layoutFilter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="에너지"
+            android:textColor="#88FFFFFF"
+            android:textSize="13sp" />
+
+        <SeekBar
+            android:id="@+id/seekBarEnergy"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="8dp"
+            android:max="1000"
+            android:progress="0"
+            android:progressTint="#FF6200EE"
+            android:thumbTint="#FF6200EE" />
+
+        <TextView
+            android:id="@+id/tvFilterValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#AAFF6200"
+            android:textSize="13sp"
+            android:fontFamily="monospace"
+            android:minWidth="72dp"
+            android:gravity="end" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerSegments"
