@@ -10,7 +10,8 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:padding="12dp">
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp">
 
         <ImageButton
             android:id="@+id/btnBack"
@@ -21,43 +22,24 @@
             android:contentDescription="뒤로" />
 
         <TextView
+            android:id="@+id/btnSelectDate"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="수면 기록"
+            android:layout_marginStart="8dp"
             android:textColor="#FFFFFFFF"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:layout_marginStart="8dp" />
+            android:drawableEnd="@android:drawable/arrow_down_float" />
     </LinearLayout>
-
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="12dp"
-        android:layout_marginVertical="4dp"
-        app:cardBackgroundColor="#FFFFFFFF"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="2dp"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
-
-        <CalendarView
-            android:id="@+id/calendarView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="4dp" />
-
-    </androidx.cardview.widget.CardView>
 
     <TextView
         android:id="@+id/tvDateInfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="16dp"
-        android:paddingTop="12dp"
-        android:textColor="#CCFFFFFF"
-        android:textSize="15sp"
-        android:textStyle="bold" />
+        android:textColor="#88FFFFFF"
+        android:textSize="13sp" />
 
     <LinearLayout
         android:id="@+id/layoutFilter"
@@ -66,7 +48,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingHorizontal="16dp"
-        android:paddingVertical="8dp"
+        android:paddingVertical="6dp"
         android:visibility="gone">
 
         <TextView

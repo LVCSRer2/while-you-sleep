@@ -51,11 +51,13 @@ object SessionManager {
         context: Context,
         session: String,
         loudSegments: List<AudioSegment>,
-        totalChunks: Int
+        totalChunks: Int,
+        endTimeMs: Long = System.currentTimeMillis()
     ) {
         val json = JSONObject().apply {
             put("session", session)
             put("totalChunks", totalChunks)
+            put("endTimeMs", endTimeMs)
             put("segments", JSONArray().apply {
                 for (seg in loudSegments) {
                     put(JSONObject().apply {
@@ -93,28 +95,47 @@ object SessionManager {
     }
 
     fun listSessionDates(context: Context): Set<String> {
-        val dir = File(context.filesDir, RECORDINGS_DIR)
-        if (!dir.exists()) return emptySet()
         val dateFormat = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
         val dates = mutableSetOf<String>()
-        dir.listFiles()?.forEach { sessionDir ->
-            val metaFile = File(sessionDir, METADATA_FILE)
-            if (metaFile.exists() && sessionDir.isDirectory) {
-                val datePart = sessionDir.name.substring(0, 8)
-                try {
-                    dateFormat.parse(datePart)
-                    dates.add(datePart)
-                } catch (_: Exception) {}
-            }
+        for (session in listAllSessions(context)) {
+            val endTime = getSessionEndTime(context, session) ?: continue
+            dates.add(dateFormat.format(Date(endTime)))
         }
         return dates
     }
 
-    fun getSessionsForDate(context: Context, dateStr: String): List<String> {
+    fun getSegmentsForDate(context: Context, dateStr: String): List<AudioSegment> {
+        val dateFormat = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+        val segments = mutableListOf<AudioSegment>()
+        for (session in listAllSessions(context)) {
+            val endTime = getSessionEndTime(context, session) ?: continue
+            if (dateFormat.format(Date(endTime)) == dateStr) {
+                segments.addAll(loadSessionMetadata(context, session))
+            }
+        }
+        segments.sortBy { it.timestampMs }
+        return segments
+    }
+
+    private fun getSessionEndTime(context: Context, session: String): Long? {
+        val file = File(getSessionDir(context, session), METADATA_FILE)
+        if (!file.exists()) return null
+        val json = JSONObject(file.readText())
+        return if (json.has("endTimeMs")) {
+            json.getLong("endTimeMs")
+        } else {
+            // Fallback for old sessions: use last segment timestamp
+            val arr = json.getJSONArray("segments")
+            if (arr.length() > 0) arr.getJSONObject(arr.length() - 1).getLong("timestampMs")
+            else null
+        }
+    }
+
+    private fun listAllSessions(context: Context): List<String> {
         val dir = File(context.filesDir, RECORDINGS_DIR)
         if (!dir.exists()) return emptyList()
         return dir.listFiles()
-            ?.filter { it.isDirectory && it.name.startsWith(dateStr) && File(it, METADATA_FILE).exists() }
+            ?.filter { it.isDirectory && File(it, METADATA_FILE).exists() }
             ?.map { it.name }
             ?.sorted()
             ?: emptyList()

@@ -1,5 +1,6 @@
 package com.example.whileyousleep
 
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -19,10 +20,10 @@ class HistoryActivity : AppCompatActivity() {
     private val audioPlayer = AudioPlayer()
     private val handler = Handler(Looper.getMainLooper())
     private var currentPlayingSegment: AudioSegment? = null
-    private var recordingDates = setOf<String>()
 
     private var allSegmentsForDate = listOf<AudioSegment>()
     private var maxEnergy = 0.0
+    private val selectedCalendar = Calendar.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,12 +34,7 @@ class HistoryActivity : AppCompatActivity() {
         binding.recyclerSegments.layoutManager = LinearLayoutManager(this)
         binding.recyclerSegments.adapter = segmentAdapter
 
-        recordingDates = SessionManager.listSessionDates(this)
-
-        binding.calendarView.setOnDateChangeListener { _, year, month, dayOfMonth ->
-            val dateStr = "%04d%02d%02d".format(year, month + 1, dayOfMonth)
-            loadDate(dateStr)
-        }
+        binding.btnSelectDate.setOnClickListener { showDatePicker() }
 
         binding.seekBarEnergy.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -48,21 +44,35 @@ class HistoryActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        val today = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(
-            Calendar.getInstance().time
-        )
-        loadDate(today)
+        loadDate(selectedCalendar)
 
         binding.btnBack.setOnClickListener { finish() }
     }
 
-    private fun loadDate(dateStr: String) {
+    private fun showDatePicker() {
+        DatePickerDialog(
+            this,
+            { _, year, month, dayOfMonth ->
+                selectedCalendar.set(year, month, dayOfMonth)
+                loadDate(selectedCalendar)
+            },
+            selectedCalendar.get(Calendar.YEAR),
+            selectedCalendar.get(Calendar.MONTH),
+            selectedCalendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+
+    private fun loadDate(cal: Calendar) {
         audioPlayer.stop()
         currentPlayingSegment = null
 
-        val sessions = SessionManager.getSessionsForDate(this, dateStr)
-        if (sessions.isEmpty()) {
-            binding.tvDateInfo.text = formatDateDisplay(dateStr) + " - 기록 없음"
+        val dateStr = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(cal.time)
+        val displayStr = SimpleDateFormat("yyyy년 M월 d일 (E)", Locale.getDefault()).format(cal.time)
+        binding.btnSelectDate.text = displayStr
+
+        val segments = SessionManager.getSegmentsForDate(this, dateStr)
+        if (segments.isEmpty()) {
+            binding.tvDateInfo.text = "기록 없음"
             allSegmentsForDate = emptyList()
             segmentAdapter.submitList(emptyList())
             binding.recyclerSegments.visibility = View.GONE
@@ -70,11 +80,6 @@ class HistoryActivity : AppCompatActivity() {
             return
         }
 
-        val segments = mutableListOf<AudioSegment>()
-        for (session in sessions) {
-            segments.addAll(SessionManager.loadSessionMetadata(this, session))
-        }
-        segments.sortBy { it.timestampMs }
         allSegmentsForDate = segments
         maxEnergy = segments.maxOfOrNull { it.rmsEnergy } ?: 0.0
 
@@ -91,15 +96,6 @@ class HistoryActivity : AppCompatActivity() {
         binding.tvDateInfo.text = "${filtered.size} / ${allSegmentsForDate.size}개 표시"
         segmentAdapter.submitList(filtered)
         binding.recyclerSegments.visibility = if (filtered.isEmpty()) View.GONE else View.VISIBLE
-    }
-
-    private fun formatDateDisplay(dateStr: String): String {
-        return try {
-            val parsed = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).parse(dateStr)
-            SimpleDateFormat("yyyy년 M월 d일", Locale.getDefault()).format(parsed!!)
-        } catch (_: Exception) {
-            dateStr
-        }
     }
 
     private fun playSegment(segment: AudioSegment) {
