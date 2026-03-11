@@ -196,6 +196,7 @@ class RecordingService : Service() {
     }
 
     fun isCurrentlyRecording() = isRecording
+    fun getRecordingStartTime() = recordingStartTime
 
     private fun createNotification(content: String): Notification {
         val notificationIntent = Intent(this, MainActivity::class.java)

@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity(), RecordingService.RecordingListener {
             bound = true
 
             if (recordingService?.isCurrentlyRecording() == true) {
+                recordingStartTime = recordingService!!.getRecordingStartTime()
                 updateUiRecording()
             }
         }
