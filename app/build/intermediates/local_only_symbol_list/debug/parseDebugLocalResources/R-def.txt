@@ -1,0 +1,29 @@
+R_DEF: Internal format may change without notice
+local
+color black
+color purple_500
+color purple_700
+color white
+drawable ic_launcher_background
+drawable ic_launcher_foreground
+id btnBack
+id btnHistory
+id btnPlay
+id btnSelectDate
+id btnToggle
+id layoutFilter
+id recyclerSegments
+id seekBarEnergy
+id tvChunkCount
+id tvDateInfo
+id tvEnergy
+id tvFilterValue
+id tvStatus
+id tvTime
+id tvTimer
+layout activity_history
+layout activity_main
+layout item_segment
+mipmap ic_launcher
+string app_name
+style Theme.WhileYouSleep

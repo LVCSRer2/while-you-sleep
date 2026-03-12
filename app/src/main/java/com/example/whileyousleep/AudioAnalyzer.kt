@@ -14,7 +14,7 @@ object AudioAnalyzer {
         return sqrt(sumSquares / count)
     }
 
-    fun computeMadThreshold(energies: List<Double>, k: Double = 3.0): Double {
+    fun computeMadThreshold(energies: List<Double>, k: Double = 5.0): Double {
         if (energies.isEmpty()) return 0.0
         val sorted = energies.sorted()
         val median = median(sorted)
